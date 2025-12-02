@@ -1,4 +1,12 @@
-This file was moved to `project_docs/README.md`.
+# 🏨 Hotel Room Reservation System
+
+A full-stack hotel room reservation system with role-based access control, featuring a minimal yet visually appealing design built with PHP, MySQL, and Tailwind CSS.
+
+![Hotel Paradise](https://img.shields.io/badge/Status-Complete-success)
+![PHP](https://img.shields.io/badge/PHP-8.0%2B-blue)
+![MySQL](https://img.shields.io/badge/MySQL-5.7%2B-orange)
+
+## ✨ Features
 
 ### 👥 User Features
 - **User Registration & Login** - Secure authentication with password hashing

@@ -12,6 +12,11 @@ if (isLoggedIn()) {
 
 // Get featured rooms
 $featured_rooms = $conn->query("SELECT * FROM rooms WHERE status = 'available' ORDER BY RAND() LIMIT 6");
+
+// Determine currently occupied rooms today
+$occupiedRooms = [];
+$occ = $conn->query("SELECT DISTINCT room_id FROM reservations WHERE status IN ('approved') AND CURDATE() >= check_in_date AND CURDATE() < check_out_date");
+if ($occ) { while ($r = $occ->fetch_assoc()) { $occupiedRooms[] = (int)$r['room_id']; } }
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -158,7 +163,7 @@ $featured_rooms = $conn->query("SELECT * FROM rooms WHERE status = 'available' O
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <?php while ($room = $featured_rooms->fetch_assoc()): ?>
+                <?php if ($featured_rooms instanceof mysqli_result && $featured_rooms->num_rows > 0): while ($room = $featured_rooms->fetch_assoc()): ?>
                     <div class="bg-white rounded-xl shadow-lg overflow-hidden transform hover:scale-105 transition-all">
                         <div class="relative h-48">
                             <img 
@@ -186,12 +191,23 @@ $featured_rooms = $conn->query("SELECT * FROM rooms WHERE status = 'available' O
                                 <i class="fas fa-users mr-2"></i>
                                 <span>Up to <?php echo $room['capacity']; ?> guest(s)</span>
                             </div>
-                            <a href="register.php" class="block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-center py-3 rounded-lg font-semibold transition-colors">
-                                Book Now
-                            </a>
+                            <?php $isOccupied = in_array((int)$room['id'], $occupiedRooms, true); ?>
+                            <?php if ($isOccupied): ?>
+                                <span class="block w-full bg-gray-400 text-white text-center py-3 rounded-lg font-semibold cursor-not-allowed" title="This room is currently occupied">
+                                    Currently Occupied
+                                </span>
+                            <?php else: ?>
+                                <a href="register.php" class="block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-center py-3 rounded-lg font-semibold transition-colors">
+                                    Book Now
+                                </a>
+                            <?php endif; ?>
                         </div>
                     </div>
-                <?php endwhile; ?>
+                <?php endwhile; else: ?>
+                    <div class="col-span-1 md:col-span-2 lg:col-span-3 text-center text-gray-500">
+                        No rooms available yet. Please add rooms in the admin panel.
+                    </div>
+                <?php endif; ?>
             </div>
 
             <div class="text-center mt-12">

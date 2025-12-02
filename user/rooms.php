@@ -43,6 +43,13 @@ if ($params) {
 }
 $stmt->execute();
 $rooms = $stmt->get_result();
+
+// Calculate currently occupied rooms: today is between check-in and check-out (exclusive)
+$occupiedRooms = [];
+$occ = $conn->query("SELECT DISTINCT room_id FROM reservations WHERE status IN ('approved') AND CURDATE() >= check_in_date AND CURDATE() < check_out_date");
+if ($occ) {
+    while ($r = $occ->fetch_assoc()) { $occupiedRooms[] = (int)$r['room_id']; }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -214,12 +221,23 @@ $rooms = $stmt->get_result();
                             </div>
 
                             <!-- Book Button -->
-                            <a 
-                                href="book.php?room_id=<?php echo $room['id']; ?>"
-                                class="block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-center py-3 rounded-lg font-semibold transition-colors"
-                            >
-                                <i class="fas fa-calendar-plus mr-2"></i> Book Now
-                            </a>
+                            <?php $isOccupied = in_array((int)$room['id'], $occupiedRooms, true); ?>
+                            <?php if ($isOccupied): ?>
+                                <button 
+                                    class="block w-full bg-gray-400 cursor-not-allowed text-white text-center py-3 rounded-lg font-semibold"
+                                    disabled
+                                    title="This room is currently occupied"
+                                >
+                                    <i class="fas fa-bed mr-2"></i> Currently Occupied
+                                </button>
+                            <?php else: ?>
+                                <a 
+                                    href="book.php?room_id=<?php echo $room['id']; ?>"
+                                    class="block w-full bg-indigo-600 hover:bg-indigo-700 text-white text-center py-3 rounded-lg font-semibold transition-colors"
+                                >
+                                    <i class="fas fa-calendar-plus mr-2"></i> Book Now
+                                </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 <?php endwhile; ?>

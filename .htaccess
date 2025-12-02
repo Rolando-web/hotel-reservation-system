@@ -1,0 +1,13 @@
+# Security and routing hardening for Apache
+# Prevent directory listings
+Options -Indexes
+
+# Prefer index.php when accessing a folder
+DirectoryIndex index.php
+
+# Ensure PHP files are handled and clean base behavior (no rewrites needed yet)
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    # You can uncomment the following line if you later add pretty URLs
+    # RewriteBase /hotel-reservation-system/
+</IfModule>

@@ -7,7 +7,15 @@ define('DB_NAME', 'hotel_reservation_system');
 
 // Application Configuration
 define('APP_NAME', 'Aurora Suite');
-define('APP_URL', 'http://localhost/hotel-room-reservation');
+
+// Dynamically determine the app URL based on current host and project folder
+// Avoid hardcoding the folder name to prevent mismatches when moved/renamed
+$__scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
+$__host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+// Project root folder name (the folder that contains this config directory)
+$__projectFolder = basename(dirname(__DIR__));
+define('APP_URL', $__scheme . '://' . $__host . '/' . $__projectFolder);
+
 define('UPLOAD_PATH', __DIR__ . '/../uploads/');
 
 // Session Configuration
@@ -29,6 +37,21 @@ try {
     }
     
     $conn->set_charset("utf8mb4");
+    // Lightweight self-healing: ensure payment_method stores wallet names
+    try {
+        $colRes = $conn->query("SHOW COLUMNS FROM reservations LIKE 'payment_method'");
+        if ($colRes && $col = $colRes->fetch_assoc()) {
+            $type = strtolower($col['Type'] ?? '');
+            if (strpos($type, "enum(") !== false && (strpos($type, "gcash") === false || strpos($type, "paymaya") === false)) {
+                $conn->query("ALTER TABLE reservations MODIFY payment_method ENUM('cash','online','gcash','paymaya') NULL DEFAULT NULL");
+            }
+            // Backfill for historical rows where method was saved as empty due to enum mismatch
+            $conn->query("UPDATE reservations SET payment_method = 'online' WHERE payment_status='paid' AND (payment_method IS NULL OR payment_method='') AND payment_reference IS NOT NULL");
+            $conn->query("UPDATE reservations SET payment_method = 'cash' WHERE payment_status='paid' AND (payment_method IS NULL OR payment_method='') AND (payment_reference IS NULL OR payment_reference='')");
+        }
+    } catch (Exception $e) {
+        // Ignore silently if ALTER not permitted; app will still run
+    }
 } catch (Exception $e) {
     die("Database connection error: " . $e->getMessage());
 }
@@ -85,7 +108,7 @@ function requireAdmin() {
     }
 }
 
-// Get current user data
+
 function getCurrentUser() {
     global $conn;
     if (!isLoggedIn()) {
@@ -100,17 +123,14 @@ function getCurrentUser() {
     return $result->fetch_assoc();
 }
 
-// Format date
 function formatDate($date) {
     return date('M d, Y', strtotime($date));
 }
 
-// Format currency
 function formatCurrency($amount) {
     return '₱' . number_format($amount, 2);
 }
 
-// Calculate number of nights
 function calculateNights($check_in, $check_out) {
     $start = new DateTime($check_in);
     $end = new DateTime($check_out);

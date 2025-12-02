@@ -226,7 +226,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php if ($is_edit && !empty($room['image'])): ?>
                         <div class="mb-3 flex items-center space-x-3">
                             <img src="<?php echo htmlspecialchars($room['image']); ?>" alt="Current image" class="w-24 h-24 object-cover rounded">
-                            <span class="text-xs text-gray-500">Current image</span>
+                            <span class="text-xs text-black">Current image</span>
                         </div>
                         <input type="hidden" name="current_image" value="<?php echo htmlspecialchars($room['image']); ?>">
                     <?php endif; ?>
@@ -235,7 +235,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         id="image" 
                         name="image"
                         accept="image/*"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg text-black focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                     >
                     <p class="text-xs text-gray-500 mt-1">Upload JPG, PNG, WEBP, or GIF. Max ~5MB.</p>
                 </div>

@@ -1,0 +1,20 @@
+# Example of the config/.htaccess which protects configuration files
+# Note: Keep the real file at config/.htaccess so Apache blocks access.
+
+# Deny direct web access to configuration directory
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Deny from all
+</IfModule>
+
+# Extra hardening: block direct execution of PHP files in this folder
+<FilesMatch "\.php$">
+  <IfModule mod_authz_core.c>
+    Require all denied
+  </IfModule>
+  <IfModule !mod_authz_core.c>
+    Deny from all
+  </IfModule>
+</FilesMatch>
