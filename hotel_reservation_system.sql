@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Dec 01, 2025 at 02:29 PM
+-- Generation Time: Dec 05, 2025 at 02:40 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -37,15 +37,6 @@ CREATE TABLE `notifications` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `notifications`
---
-
-INSERT INTO `notifications` (`id`, `user_id`, `type`, `message`, `link`, `read_at`, `created_at`) VALUES
-(18, 7, 'reservation', 'Your reservation #17 has been approved.', 'http://localhost/hotel-room-reservation/user/reservations.php', NULL, '2025-12-01 12:40:43'),
-(19, 7, '', 'Thank you for checking out! Please proceed with payment for reservation #000017.', '/user/reservations.php', NULL, '2025-12-01 12:41:13'),
-(20, 7, '', 'Payment successful for reservation #000017 via GCASH. Your stay is now complete!', '/user/receipt.php?id=17', NULL, '2025-12-01 12:41:30');
-
 -- --------------------------------------------------------
 
 --
@@ -63,7 +54,7 @@ CREATE TABLE `reservations` (
   `total_price` decimal(10,2) NOT NULL,
   `status` enum('pending','approved','rejected','cancelled','completed') DEFAULT 'pending',
   `payment_status` enum('unpaid','paid') DEFAULT 'unpaid',
-  `payment_method` enum('online','cash') DEFAULT NULL,
+  `payment_method` enum('cash','online','gcash','paymaya') DEFAULT NULL,
   `payment_date` datetime DEFAULT NULL,
   `checkout_date` datetime DEFAULT NULL,
   `admin_notes` text DEFAULT NULL,
@@ -72,13 +63,6 @@ CREATE TABLE `reservations` (
   `payment_reference` varchar(100) DEFAULT NULL,
   `has_review` tinyint(1) DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `reservations`
---
-
-INSERT INTO `reservations` (`id`, `user_id`, `room_id`, `check_in_date`, `check_in_time`, `check_out_date`, `number_of_guests`, `total_price`, `status`, `payment_status`, `payment_method`, `payment_date`, `checkout_date`, `admin_notes`, `created_at`, `updated_at`, `payment_reference`, `has_review`) VALUES
-(17, 7, 3, '2025-12-01', '22:00:00', '2025-12-02', 2, 1500.00, 'completed', 'paid', '', '2025-12-01 12:41:30', '2025-12-01 12:41:13', 'thank you', '2025-12-01 12:40:25', '2025-12-01 12:41:30', '123123123123123123', 0);
 
 -- --------------------------------------------------------
 
@@ -96,13 +80,6 @@ CREATE TABLE `reviews` (
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
---
--- Dumping data for table `reviews`
---
-
-INSERT INTO `reviews` (`id`, `user_id`, `room_id`, `reservation_id`, `rating`, `comment`, `created_at`, `updated_at`) VALUES
-(2, 7, 3, 17, 5, 'nindota uy', '2025-12-01 12:41:13', '2025-12-01 12:41:13');
 
 -- --------------------------------------------------------
 
@@ -139,8 +116,7 @@ INSERT INTO `rooms` (`id`, `room_number`, `room_type`, `capacity`, `price_per_ni
 (9, '501', 'family', 4, 3000.00, 'Spacious family room with multiple beds. Perfect for families traveling with children.', 'Free WiFi, Air Conditioning, Smart TV, Kitchenette, 2 Bathrooms, Sofa Bed, Kids Amenities, Balcony', 'https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=800', 'available', '2025-11-26 05:18:48', '2025-11-26 05:57:32'),
 (10, '502', 'family', 4, 3500.00, 'Large family suite with connecting rooms. Provides comfort and convenience for the whole family.', 'Free WiFi, Air Conditioning, 2 Smart TVs, Full Kitchen, 2 Bathrooms, Gaming Console, Kids Play Area, Balcony', 'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=800', 'available', '2025-11-26 05:18:48', '2025-11-26 05:57:41'),
 (11, '103', 'single', 1, 3000.00, 'Modern single room with minimalist design. A peaceful sanctuary for the modern traveler.', 'Free WiFi, Air Conditioning, TV, Work Desk, Private Bathroom, Blackout Curtains', 'https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?w=800', 'available', '2025-11-26 05:18:48', '2025-12-01 12:49:08'),
-(12, '203', 'double', 2, 3000.00, 'Stylish double room with premium bedding. Enjoy a restful night in comfort and elegance.', 'Free WiFi, Air Conditioning, Smart TV, Mini Fridge, Private Bathroom, Premium Linens', 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800', 'available', '2025-11-26 05:18:48', '2025-11-26 05:56:56'),
-(16, '155', 'family', 7, 2500.00, 'qweqweqweqwe', 'free,wew,ew,ewew,ew,e,we,w,ew', '/uploads/rooms/room_1764593415_5b658ca3.png', 'available', '2025-12-01 12:50:05', '2025-12-01 12:50:15');
+(12, '203', 'double', 2, 3000.00, 'Stylish double room with premium bedding. Enjoy a restful night in comfort and elegance.', 'Free WiFi, Air Conditioning, Smart TV, Mini Fridge, Private Bathroom, Premium Linens', 'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800', 'available', '2025-11-26 05:18:48', '2025-11-26 05:56:56');
 
 -- --------------------------------------------------------
 
@@ -233,25 +209,25 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `notifications`
 --
 ALTER TABLE `notifications`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
 
 --
 -- AUTO_INCREMENT for table `reservations`
 --
 ALTER TABLE `reservations`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
 
 --
 -- AUTO_INCREMENT for table `reviews`
 --
 ALTER TABLE `reviews`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
 
 --
 -- AUTO_INCREMENT for table `users`
